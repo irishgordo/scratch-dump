@@ -1,0 +1,7 @@
+:7000 {
+    log {
+        level DEBUG
+    }
+    root * /home/vagrant/file-server
+    file_server browse
+}

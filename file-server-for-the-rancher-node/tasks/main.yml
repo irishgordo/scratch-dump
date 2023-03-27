@@ -1,0 +1,103 @@
+  - name: Set Up File Server
+    block:
+      - name: build file-server directory for vagrant rancher_box
+        ansible.builtin.file:
+          path: /home/vagrant/file-server
+          state: directory
+
+      - name: snag the latest master-head and v11 release artifacts
+        ansible.builtin.get_url:
+          url: "{{ item }}"
+          dest: /home/vagrant/file-server
+          timeout: 30
+          force: yes
+        loop:
+          - https://releases.rancher.com/harvester/v1.1/harvester-v1.1-amd64.iso
+          - https://releases.rancher.com/harvester/v1.1/harvester-v1.1-vmlinuz-amd64
+          - https://releases.rancher.com/harvester/v1.1/harvester-v1.1-initrd-amd64
+          - https://releases.rancher.com/harvester/v1.1/harvester-v1.1-rootfs-amd64.squashfs
+          - https://releases.rancher.com/harvester/v1.1/harvester-v1.1-amd64.sha512
+          - https://releases.rancher.com/harvester/master/harvester-master-amd64.iso
+          - https://releases.rancher.com/harvester/master/harvester-master-vmlinuz-amd64
+          - https://releases.rancher.com/harvester/master/harvester-master-initrd-amd64
+          - https://releases.rancher.com/harvester/master/harvester-master-rootfs-amd64.squashfs
+          - https://releases.rancher.com/harvester/master/harvester-master-amd64.sha512
+
+      - name: snag some of the cloud images, both opensuse and ubuntu for fileserver
+        ansible.builtin.get_url:
+          url: "{{ item }}"
+          dest: /home/vagrant/file-server
+          timeout: 30
+          force: yes
+        loop:
+          - https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
+          - https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.4/images/openSUSE-Leap-15.4.x86_64-1.0.1-NoCloud-Build2.243.qcow2
+
+      - name: copy over the python script to build the version yamls appropriately
+        ansible.builtin.copy:
+          src: files/make_version_yamls.py
+          dest: /home/vagrant/file-server
+
+      - name: make the version yamls
+        ansible.builtin.script: files/make_version_yamls.py
+        args:
+          executable: python3
+          chdir: /home/vagrant/file-server
+
+      - name: grab caddy keyring to set up the fileserver
+        ansible.builtin.shell: |
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+
+      - name: grab additional caddy setting
+        ansible.builtin.shell: |
+          curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+
+      # NOTE: running 'update_cache' on the builtin apt module is not 'reliable', has mixed success over a series of runs
+      # had tried to originally implement that way, was presented with problems where sometimes it would work
+      # other times it simply wouldn't
+      - name: Run the equivalent of "apt-get update" as a separate step, first
+        ansible.builtin.apt:
+          update_cache: yes
+          update_cache_retries: 10
+
+      - name: grab caddy
+        retries: 30
+        delay: 10
+        ansible.builtin.apt:
+          pkg:
+            - caddy
+          state: present
+        register: apt_init_result
+        until: apt_init_result is success
+
+      - name: copy over the caddyfile
+        ansible.builtin.copy:
+          src: files/Caddyfile
+          dest: /home/vagrant/file-server
+
+      - name: make file server dir friendly
+        ansible.builtin.shell: |
+          chown -Rv vagrant:vagrant /home/vagrant/file-server
+
+      - name: stop caddy
+        ansible.builtin.service:
+          name: caddy
+          state: stopped
+
+      - name: mv over caddyfile
+        ansible.builtin.shell: |
+          cp -v /home/vagrant/file-server/Caddyfile /etc/caddy/Caddyfile
+
+      - name: make vagrant a part of caddy group
+        ansible.builtin.shell: |
+          usermod -aG vagrant caddy
+
+      - name: reloaded caddy
+        ansible.builtin.service:
+          name: caddy
+          state: reloaded
+
+      - name: start caddy
+        ansible.builtin.service:
+          name: caddy
+          state: started
