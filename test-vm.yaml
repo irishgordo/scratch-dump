@@ -1,0 +1,22 @@
+scheme_version: 1
+token: token
+install:
+  mode: create
+  management_interface:
+    interfaces:
+      - name: enp1s0
+    method: dhcp
+  force_efi: true
+  device: /dev/vda
+  addons:
+    rancher_logging:
+      enabled: true
+    rancher_monitoring:
+      enabled: true
+  harvester:
+    storageClass:
+      replicaCount: 1
+    longhorn:
+      defaultSettings:
+        guaranteedEngineManagerCPU: 4
+        guaranteedReplicaManagerCPU: 4
