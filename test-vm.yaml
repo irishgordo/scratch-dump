@@ -13,10 +13,3 @@ install:
       enabled: true
     rancher_monitoring:
       enabled: true
-  harvester:
-    storageClass:
-      replicaCount: 1
-    longhorn:
-      defaultSettings:
-        guaranteedEngineManagerCPU: 4
-        guaranteedReplicaManagerCPU: 4
