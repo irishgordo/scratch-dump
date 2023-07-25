@@ -1,0 +1,22 @@
+scheme_version: 1
+token: token
+install:
+  mode: create
+  management_interface:
+    interfaces:
+      - name: enp6s0f1
+        hwaddr: "00:14:5e:ea:33:83"
+    method: dhcp
+  force_efi: true
+  device: /dev/sda
+  addons:
+    rancher-logging:
+      enabled: true
+    rancher-monitoring:
+      enabled: true
+    vm-import-controller:
+      enabled: true
+    pcidevices-controller:
+      enabled: true
+    harvester-seeder:
+      enabled: true
