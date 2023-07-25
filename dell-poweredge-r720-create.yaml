@@ -1,22 +1,77 @@
 scheme_version: 1
 token: token
+os:
+  labels:
+    topology.kubernetes.io/zone: "az-nv1"
+    purpose: "testing"
+    versioninstalled: "v1.2.0-rc4"
+  hostname: dell-poweredge-single-node
+  modules:
+    - kvm
+    - nvme
+    - sata_vsc
+    - vhost
+    - mvsas
+    - gru
+    - macvtap
+    - hid_sensor_prox
+    - ppa
+    - scsi_dh_hp-sw
+    - gpio_regulator
+    - snd_hda_codec_cmedia
+    - snd_hda_intel
+    - snd_emu10k1
+    - nvme_tcp
+    - iwlmvm
+    - softdog
+    - virtio_balloon
+    - vfio_pci
+    - vfio_virqfd
+    - dell_smbios
+    - openvswitch
+    - ipmi_poweroff
+    - libceph
+    - video
+    - governor_simpleondemand
+    - governor_performance
+    - processor_thermal_rfim
+    - selftests
+    - power
+    - vhost_scsi
+    - processor_thermal_mbox
+    - thermal
+    - processor_thermal_rapl
+    - processor_thermal_device
+    - processor_thermal_device_pci
+    - intel_pch_thermal
 install:
   mode: create
   management_interface:
     interfaces:
-      - name: enp6s0f1
-        hwaddr: "00:14:5e:ea:33:83"
+      - name: enp66s0
+        hwaddr: "80:61:5f:15:49:d4"
     method: dhcp
+    bondoptions:
+      miimon: "100"
+      mode: "active-backup"
   force_efi: true
+  vip: 192.168.1.224
+  viphwaddr: da:66:a8:07:13:c5
+  vipmode: dhcp
   device: /dev/sda
   addons:
-    rancher-logging:
+    rancher_logging:
       enabled: true
-    rancher-monitoring:
+      valuescontent: ""
+    rancher_monitoring:
       enabled: true
-    vm-import-controller:
+      valuescontent: ""
+    vm_import_controller:
       enabled: true
-    pcidevices-controller:
+      valuescontent: ""
+    pcidevices_controller:
       enabled: true
-    harvester-seeder:
+      valuescontent: ""
+    harvester_seeder:
       enabled: true
+      valuescontent: ""
