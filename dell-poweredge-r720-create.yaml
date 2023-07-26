@@ -54,7 +54,7 @@ install:
     bondoptions:
       miimon: "100"
       mode: "active-backup"
-  force_efi: true
+  force_efi: false
   vip: 192.168.1.224
   viphwaddr: da:66:a8:07:13:c5
   vipmode: dhcp
