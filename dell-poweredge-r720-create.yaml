@@ -66,10 +66,10 @@ install:
     rancher_monitoring:
       enabled: true
       valuescontent: ""
-    vm_import_controller:
+    harvester_vm_import_controller:
       enabled: true
       valuescontent: ""
-    pcidevices_controller:
+    harvester_pcidevices_controller:
       enabled: true
       valuescontent: ""
     harvester_seeder:
